@@ -1,18 +1,22 @@
 ScalaTunings {
-	*initClass {
-		var archiveFolder;
+	*at { |tuningName|
+		var tuning;
 
-		Class.initClassTree(Tuning);
+		tuning = Tuning.at( tuningName );
 
-		archiveFolder = PathName(ScalaTunings.filenameSymbol.asString).pathOnly +/+ "archive";
+		if( tuning.isNil ) {
+			var scalaFileName = PathName( ScalaTunings.filenameSymbol.asString ).pathOnly +/+ "archive" +/+ "%.scl".format( tuningName )  ;
+			if( File.exists( scalaFileName ).not ) {
+				"% does not exist".format( scalaFileName ).throw;
+			};
 
-		PathName(archiveFolder).files.do {|i|
-			File.use(i.fullPath, "r", {|f|
-				var name = i.fileNameWithoutExtension;
-				var tuning = Tuning.fromScala( f.readAllString );
-				Tuning.all.put( name.asSymbol, tuning )
-			})
-		}
+			File.use ( scalaFileName, "r", { |file|
+				var tuning = Tuning.fromScala( file.readAllString );
+				Tuning.all.put( tuningName.asSymbol, tuning )
+			});
+		};
+
+		^Tuning.at( tuningName );
 	}
 }
 
